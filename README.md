@@ -16,4 +16,6 @@ docker build -t <image_tag> . \
 <image_tag> 
 ```
 
-Map `host_path` to `container_path` with `-v <host_path>:<container_path>` to appoint file location on the host machine
+Map `host_path` to `container_path` with `-v <host_path>:<container_path>` to appoint file location on the host machine.
+
+It is presumed that `host_path` exists on the host machine.
