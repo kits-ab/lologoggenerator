@@ -1,3 +1,6 @@
 # intellij
-.idea
+.idea/
 
+# Build directory
+docker-dir/lologoggenerator_war/
+target/
