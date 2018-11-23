@@ -13,7 +13,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.slf4j.LoggerFactory;
 import se.kits.stuff.model.LogFileDefinition;
+import se.kits.stuff.tasks.WriteTask;
 
+import javax.annotation.Resource;
+import javax.ejb.Stateless;
+import javax.enterprise.concurrent.ManagedThreadFactory;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -31,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+@Stateless
 @Path("")
 public class FileController {
 
@@ -39,6 +44,16 @@ public class FileController {
     private static final String CONFIG_FILEPATH = APPLOLOGOG_DIR + CONFIG_FILENAME;
     private static final Logger LOGGER = (Logger) LoggerFactory.getLogger(FileController.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final String FILEAPPENDER_1 = "fileappender1";
+
+    @Resource
+    private ManagedThreadFactory managedThreadFactory;
+
+    private void writeLogInSeparateThread(Logger customLogger) {
+        WriteTask writeTask = new WriteTask(customLogger);
+        Thread thread = managedThreadFactory.newThread(writeTask);
+        thread.start();
+    }
 
     @POST
     @Path("/logfiledefinition")
@@ -81,7 +96,7 @@ public class FileController {
         try {
             LogFileDefinition logFileDefinition = getLogFileDefinition();
             Logger customLogger = createFileLogger(logFileDefinition);
-            customLogger.info("this is a message to the log: {}", logFileDefinition.getLogPattern());
+            writeLogInSeparateThread(customLogger);
             return Response.ok().build();
         } catch (IOException e) {
             LOGGER.error("IOException: {}", e.toString());
@@ -97,6 +112,7 @@ public class FileController {
         patternLayoutEncoder.start();
 
         FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
+        fileAppender.setName(FILEAPPENDER_1);
         fileAppender.setFile(APPLOLOGOG_DIR + logFileDefinition.getFileName());
         fileAppender.setEncoder(patternLayoutEncoder);
         fileAppender.setContext(loggerContext);
