@@ -44,13 +44,12 @@ public class FileController {
     private static final String CONFIG_FILEPATH = APPLOLOGOG_DIR + CONFIG_FILENAME;
     private static final Logger LOGGER = (Logger) LoggerFactory.getLogger(FileController.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final String FILEAPPENDER_1 = "fileappender1";
 
     @Resource
     private ManagedThreadFactory managedThreadFactory;
 
-    private void writeLogInSeparateThread(Logger customLogger) {
-        WriteTask writeTask = new WriteTask(customLogger);
+    private void writeLogInSeparateThread(LogFileDefinition logFileDefinition) {
+        WriteTask writeTask = new WriteTask(logFileDefinition);
         Thread thread = managedThreadFactory.newThread(writeTask);
         thread.start();
     }
@@ -95,35 +94,12 @@ public class FileController {
     public Response startLogGen() {
         try {
             LogFileDefinition logFileDefinition = getLogFileDefinition();
-            Logger customLogger = createFileLogger(logFileDefinition);
-            writeLogInSeparateThread(customLogger);
+            writeLogInSeparateThread(logFileDefinition);
             return Response.ok().build();
         } catch (IOException e) {
             LOGGER.error("IOException: {}", e.toString());
             return Response.serverError().build();
         }
-    }
-
-    private static Logger createFileLogger(LogFileDefinition logFileDefinition) {
-        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
-        patternLayoutEncoder.setContext(loggerContext);
-        patternLayoutEncoder.setPattern("%date{ISO8601} [%thread] %-5level %logger{36} - %msg%n");
-        patternLayoutEncoder.start();
-
-        FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
-        fileAppender.setName(FILEAPPENDER_1);
-        fileAppender.setFile(APPLOLOGOG_DIR + logFileDefinition.getFileName());
-        fileAppender.setEncoder(patternLayoutEncoder);
-        fileAppender.setContext(loggerContext);
-        fileAppender.start();
-
-        Logger logger = (Logger) LoggerFactory.getLogger("fileLogger1");
-        logger.addAppender(fileAppender);
-        logger.setLevel(Level.INFO);
-//        logger.setAdditive(false);
-
-        return logger;
     }
 
     @POST

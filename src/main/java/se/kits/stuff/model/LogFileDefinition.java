@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class LogFileDefinition {
     private String fileName;
     private String logPattern;
-    private Long timeSkew;
-    private int frequency;
+    private int timeSkewSeconds;
+    private int frequencyPerMinute;
 
 }
