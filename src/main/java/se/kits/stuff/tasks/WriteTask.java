@@ -12,19 +12,18 @@ import se.kits.stuff.model.LogFileDefinition;
 public class WriteTask implements Runnable {
 
     private static final Logger LOGGER = (Logger) LoggerFactory.getLogger(WriteTask.class);
-    private Logger customLogger;
+    private static final String FILE_LOGGER_1 = "fileLogger1";
     private LogFileDefinition logFileDefinition;
     private static final String APPLOLOGOG_DIR = "/app/lologog/";
     private static final String FILEAPPENDER_1 = "fileappender1";
 
     public WriteTask(LogFileDefinition logFileDefinition) {
         this.logFileDefinition = logFileDefinition;
-//        this.customLogger = createFileLogger(logFileDefinition);
     }
 
     @Override
     public void run() {
-        customLogger = createFileLogger(this.logFileDefinition);
+        Logger customLogger = createFileLogger(this.logFileDefinition);
         try {
             for (int i = 0; i < 20; i++) {
                 customLogger.info("just another log row: {}", i);
@@ -53,7 +52,7 @@ public class WriteTask implements Runnable {
         fileAppender.setContext(loggerContext);
         fileAppender.start();
 
-        Logger logger = (Logger) LoggerFactory.getLogger("fileLogger1");
+        Logger logger = (Logger) LoggerFactory.getLogger(FILE_LOGGER_1);
         logger.addAppender(fileAppender);
         logger.setLevel(Level.INFO);
 //        logger.setAdditive(false);

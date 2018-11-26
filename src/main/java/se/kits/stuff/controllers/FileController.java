@@ -1,11 +1,6 @@
 package se.kits.stuff.controllers;
 
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.FileAppender;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
@@ -44,20 +39,17 @@ public class FileController {
     private static final String CONFIG_FILEPATH = APPLOLOGOG_DIR + CONFIG_FILENAME;
     private static final Logger LOGGER = (Logger) LoggerFactory.getLogger(FileController.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final String LOGFILE_START_PATH = "/logfile/start";
+    private static final String LOGFILE_DEFINITION_PATH = "/logfiledefinition";
 
     @Resource
     private ManagedThreadFactory managedThreadFactory;
 
-    private void writeLogInSeparateThread(LogFileDefinition logFileDefinition) {
-        WriteTask writeTask = new WriteTask(logFileDefinition);
-        Thread thread = managedThreadFactory.newThread(writeTask);
-        thread.start();
-    }
-
     @POST
-    @Path("/logfiledefinition")
+    @Path(LOGFILE_DEFINITION_PATH)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createLogFileDefinition(LogFileDefinition logFileDefinition) {
+        LOGGER.info("POST {}", LOGFILE_DEFINITION_PATH);
         try {
             Files.write(Paths.get(CONFIG_FILEPATH), OBJECT_MAPPER.writeValueAsString(logFileDefinition).getBytes());
             LOGGER.info("Config file written to {}", CONFIG_FILEPATH);
@@ -75,29 +67,22 @@ public class FileController {
     @Path("/logfiledefinition")
     @Produces(MediaType.APPLICATION_JSON)
     public Response returnLogFileDefinition() {
-        try {
-            LogFileDefinition logFileDefinition = getLogFileDefinition();
-            return Response.ok(logFileDefinition).build();
-        } catch (IOException e) {
-            LOGGER.error("IOException: {}", e.toString());
-            return Response.ok().build();
-        }
-    }
-
-    private LogFileDefinition getLogFileDefinition() throws IOException {
-        return OBJECT_MAPPER.readValue(Files.readAllBytes(Paths.get(CONFIG_FILEPATH)), LogFileDefinition.class);
+        LOGGER.info("GET {}", LOGFILE_DEFINITION_PATH);
+        LogFileDefinition logFileDefinition = getLogFileDefinition();
+        return logFileDefinition == null ? Response.serverError().build() : Response.ok(logFileDefinition).build();
     }
 
     @GET
-    @Path("/logfile/start")
+    @Path(LOGFILE_START_PATH)
     @Produces(MediaType.APPLICATION_JSON)
     public Response startLogGen() {
-        try {
-            LogFileDefinition logFileDefinition = getLogFileDefinition();
+        LOGGER.info("GET {}", LOGFILE_START_PATH);
+        LogFileDefinition logFileDefinition = getLogFileDefinition();
+        if (logFileDefinition != null) {
             writeLogInSeparateThread(logFileDefinition);
+            LOGGER.info("Generating logs to: {}", APPLOLOGOG_DIR + logFileDefinition.getFileName());
             return Response.ok().build();
-        } catch (IOException e) {
-            LOGGER.error("IOException: {}", e.toString());
+        } else {
             return Response.serverError().build();
         }
     }
@@ -135,6 +120,21 @@ public class FileController {
             LOGGER.error("File read failed: {}", filepath);
             return Response.serverError().build();
         }
+    }
+
+    private static LogFileDefinition getLogFileDefinition() {
+        try {
+            return OBJECT_MAPPER.readValue(Files.readAllBytes(Paths.get(CONFIG_FILEPATH)), LogFileDefinition.class);
+        } catch (IOException e) {
+            LOGGER.error("IO Error, failed to read {}", CONFIG_FILEPATH);
+            return null;
+        }
+    }
+
+    private void writeLogInSeparateThread(LogFileDefinition logFileDefinition) {
+        WriteTask writeTask = new WriteTask(logFileDefinition);
+        Thread thread = managedThreadFactory.newThread(writeTask);
+        thread.start();
     }
 
     @Data
