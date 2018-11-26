@@ -3,7 +3,9 @@ Generate logs for fun
 
 ## Developer Setup
 
-Output exploded war file to `<project_path>/docker-dir/lologoggenerator_war`
+Output exploded war file `lologoggenerator.war` to `<project_path>/docker-dir/lologoggenerator_war` at build time
+
+IntelliJ setup walkthrough: https://www.jetbrains.com/help/idea/deploying-a-web-app-into-wildfly-container.html
 
 ## Building and Running
 
