@@ -59,8 +59,13 @@
 <hr/>
 
 <div>
-    <h:commandButton id="startButton" value="Start" disabled="false"/> ...
-    <h:commandButton id="stopButton" value="Stop" disabled="false"/>
+    <h:form>
+        <h:commandButton id="startButton" value="Start" action="#{settings.start}" disabled="false"/> ...
+        <h:commandButton id="stopButton" value="Stop" action="#{settings.stop}" disabled="false"/>
+    </h:form>
+    <p/>
+    RUNNING STATUS:
+    <h:outputText id="runningStatus" value="#{settings.running}" />
 </div>
 
 

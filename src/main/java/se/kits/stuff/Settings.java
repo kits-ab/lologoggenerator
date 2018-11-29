@@ -4,8 +4,11 @@ import ch.qos.logback.classic.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 import se.kits.stuff.model.LogFileDefinition;
+import se.kits.stuff.tasks.GenerateLogTask;
 
-import javax.enterprise.context.RequestScoped;
+import javax.annotation.Resource;
+import javax.enterprise.concurrent.ManagedThreadFactory;
+import javax.enterprise.context.ApplicationScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
@@ -21,10 +24,11 @@ import java.util.Collections;
 import java.util.List;
 
 @Named
-@RequestScoped
+@ApplicationScoped
 public class Settings implements Serializable {
 
     private static final Logger LOGGER = (Logger) LoggerFactory.getLogger(Settings.class);
+    private boolean running = false;
     private String fileName;
     private String logPattern;
     private int timeSkewSeconds;
@@ -35,9 +39,45 @@ public class Settings implements Serializable {
     private static final String CONFIG_FILEPATH = APPLOLOGOG_DIR + CONFIG_FILENAME;
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private ArrayList<GenerateLogTask> generateLogTasks = new ArrayList<>();
+
+    @Resource
+    private ManagedThreadFactory managedThreadFactory;
+
+    public void start() {
+        if (running) {
+            LOGGER.info("Start button clicked when loggers are already running");
+        } else {
+            ArrayList<LogFileDefinition> logFileDefinitions = readConfigsFromFile();
+            if (logFileDefinitions != null) {
+                for (LogFileDefinition logFileDefinition : logFileDefinitions) {
+                    GenerateLogTask generateLogTask = new GenerateLogTask(logFileDefinition);
+                    Thread threadForLogFileDefinition = managedThreadFactory.newThread(generateLogTask);
+                    threadForLogFileDefinition.start();
+                    this.generateLogTasks.add(generateLogTask);
+                }
+                running = true;
+                LOGGER.info("Log generation has started.");
+            } else {
+                LOGGER.info("No valid config. No threads should be logging");
+            }
+        }
+    }
+
+    public void stop() {
+        if (running) {
+            running = false;
+            for (GenerateLogTask generateLogTask : this.generateLogTasks) {
+                generateLogTask.setRunning(running);
+            }
+            LOGGER.info("The log generation has been stopped.");
+        } else {
+            LOGGER.info("Stop button clicked when no loggers are running");
+        }
+    }
 
     public void writeNewLogFileConfig() {
-        LogFileDefinition logFileDefinition = toLogFileDefinition();
+        LogFileDefinition logFileDefinition = jsfViewInputToLogFileDefinition();
         LOGGER.info("New config to file: {}", logFileDefinition);
         List<LogFileDefinition> logFileDefinitions = new ArrayList<>();
         logFileDefinitions.add(logFileDefinition);
@@ -48,7 +88,7 @@ public class Settings implements Serializable {
     public void addConfigToFile() {
         LOGGER.info("add to config clicked");
         ArrayList<LogFileDefinition> logFileDefinitions = readConfigsFromFile();
-        LogFileDefinition logFileDefinition = toLogFileDefinition();
+        LogFileDefinition logFileDefinition = jsfViewInputToLogFileDefinition();
         if (logFileDefinitions != null) {
             logFileDefinitions.add(logFileDefinition);
             writeNewConfigToFile(logFileDefinitions);
@@ -58,7 +98,7 @@ public class Settings implements Serializable {
         LOGGER.info("config added to file: {}", CONFIG_FILENAME);
     }
 
-    private LogFileDefinition toLogFileDefinition() {
+    private LogFileDefinition jsfViewInputToLogFileDefinition() {
         return LogFileDefinition.builder()
                 .fileName(this.fileName)
                 .logPattern(this.logPattern)
@@ -126,5 +166,9 @@ public class Settings implements Serializable {
 
     public void setFrequencyPerMinute(int frequencyPerMinute) {
         this.frequencyPerMinute = frequencyPerMinute;
+    }
+
+    public boolean isRunning() {
+        return running;
     }
 }

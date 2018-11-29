@@ -24,3 +24,5 @@ It is presumed that `host_path` exists on the host machine.
 
 ## Using
 User can create logfile definitions through REST endpoints or `http://localhost:<host_port>/lologoggenerator/`
+User can run log generation through the JSF view `http://localhost:<host_port>/lologoggenerator/`
+
