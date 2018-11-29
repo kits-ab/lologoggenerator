@@ -6,6 +6,10 @@ import org.slf4j.LoggerFactory;
 import se.kits.stuff.model.LogFileDefinition;
 
 import javax.enterprise.context.RequestScoped;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
@@ -79,6 +83,16 @@ public class Settings implements Serializable {
         } catch (IOException e) {
             LOGGER.error("IO Error, failed to read {}", CONFIG_FILEPATH);
             return null;
+        }
+    }
+
+    public void validateFrequencyRange(FacesContext context, UIComponent toValidate, Object value) {
+        double inputFrequency = (double) ((Integer) value);
+        if (inputFrequency <= 0) {
+            FacesMessage message = new FacesMessage("Frequency must be greater than 0.");
+            context.addMessage(toValidate.getClientId(context), message);
+            ((UIInput) toValidate).setValid(false);
+            LOGGER.info("JSF Validator for Frequency Failed for input: {}", inputFrequency);
         }
     }
 

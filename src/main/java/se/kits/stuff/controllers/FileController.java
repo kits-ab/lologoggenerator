@@ -50,6 +50,10 @@ public class FileController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createLogFileDefinition(LogFileDefinition logFileDefinition) {
         LOGGER.info("POST {}", LOGFILE_DEFINITION_PATH);
+        if (logFileDefinition.getFrequencyPerMinute() <= 0) {
+            LOGGER.info("Config creation aborted, Forbidden input: {}", logFileDefinition);
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         try {
             Files.write(Paths.get(CONFIG_FILEPATH), OBJECT_MAPPER.writeValueAsString(logFileDefinition).getBytes());
             LOGGER.info("Config file written to {}", CONFIG_FILEPATH);

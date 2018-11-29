@@ -19,6 +19,5 @@ public class LogFileDefinition {
     private String fileName;
     private String logPattern;
     private int timeSkewSeconds;
-    private int frequencyPerMinute;
-
+    private double frequencyPerMinute;
 }

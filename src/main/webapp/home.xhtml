@@ -33,10 +33,11 @@
                          disabled="#{false}"
             />
             <p/>
-            Frequency Per Minute:
+            Frequency Per Minute (> 0):
             <h:inputText id="frequency" value="#{settings.frequencyPerMinute}"
                          required="true" size="3"
                          disabled="#{false}"
+                         validator="#{settings.validateFrequencyRange}"
             />
             <p/>
             <h:commandButton id="newConfigButton" value="New Config"
@@ -49,7 +50,19 @@
         </div>
     </h:form>
 
+    <div style="color: red">
+        <h:messages id="messages" globalOnly="false" />
+    </div>
+
 </div>
+
+<hr/>
+
+<div>
+    <h:commandButton id="startButton" value="Start" disabled="false"/> ...
+    <h:commandButton id="stopButton" value="Stop" disabled="false"/>
+</div>
+
 
 <br style="clear: both" />
 

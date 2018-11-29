@@ -27,9 +27,13 @@ public class WriteTask implements Runnable {
         try {
             for (int i = 0; i < 20; i++) {
                 customLogger.info("just another log row: {}", i);
-                double v = 60.0 / (float) logFileDefinition.getFrequencyPerMinute();
-                long delay = (long) (v * 1000);
-                Thread.sleep(delay);
+
+                double frequencyPerMinute = logFileDefinition.getFrequencyPerMinute();
+                if (frequencyPerMinute > 0) {
+                    double v = 60.0 / frequencyPerMinute;
+                    long delay = (long) (v * 1000);
+                    Thread.sleep(delay);
+                }
             }
             customLogger.detachAndStopAllAppenders();
         } catch (InterruptedException e) {
