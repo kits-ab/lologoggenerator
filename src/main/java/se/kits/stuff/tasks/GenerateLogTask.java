@@ -31,7 +31,7 @@ public class GenerateLogTask implements Runnable {
         try {
             Thread.sleep((long) (1000 * logFileDefinition.getTimeSkewSeconds()));
             while (this.running) {
-                customLogger.info("Logrow message {}", Instant.now().toString());
+                customLogger.info("Logrow message!");
                 double frequencyPerMinute = logFileDefinition.getFrequencyPerMinute();
                 if (frequencyPerMinute > 0) {
                     double v = 60.0 / frequencyPerMinute;

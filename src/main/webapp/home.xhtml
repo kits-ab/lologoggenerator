@@ -23,9 +23,16 @@
             <p/>
             Log Pattern (logback):
             <h:inputText id="logPattern" value="#{settings.logPattern}"
-                         required="true" size="64"
+                         required="false" size="64"
                          disabled="#{false}"
             />
+            <p/>
+            Log Pattern Preset:
+            <h:selectOneMenu value = "#{settings.logPatternPreSetSelection}">
+                <f:selectItem itemValue = "" itemLabel = "Nothing" />
+                <f:selectItem itemValue = '%date{ISO8601} [%thread] %-5level %logger{32} - %msg%n' itemLabel = "Example Java EE format" />
+                <f:selectItem itemValue = '{"@timestamp": "%date{yyyy-MM-dd}T%date{HH:mm:ss.SSS}", "@version": int, "message": %msg, "logger_name": %logger, "thread_name": %thread "level": %-5level, "level_value": %level, "stack_trace": "string", "X-Span-Id": "string"}%n' itemLabel = "Logstash Encoder" />
+            </h:selectOneMenu>
             <p/>
             Time Skew in Seconds:
             <h:inputText id="timeSkew" value="#{settings.timeSkewSeconds}"
@@ -58,6 +65,7 @@
 
 <hr/>
 
+<h1>Generate logs</h1>
 <div>
     <h:form>
         <h:commandButton id="startButton" value="Start" action="#{settings.start}" disabled="false"/> ...

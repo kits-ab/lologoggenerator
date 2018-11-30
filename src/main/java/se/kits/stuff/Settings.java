@@ -31,6 +31,7 @@ public class Settings implements Serializable {
     private boolean running = false;
     private String fileName;
     private String logPattern;
+    private String logPatternPreSetSelection;
     private int timeSkewSeconds;
     private int frequencyPerMinute;
 
@@ -101,7 +102,7 @@ public class Settings implements Serializable {
     private LogFileDefinition jsfViewInputToLogFileDefinition() {
         return LogFileDefinition.builder()
                 .fileName(this.fileName)
-                .logPattern(this.logPattern)
+                .logPattern(this.logPatternPreSetSelection.isEmpty() ? this.logPattern : this.logPatternPreSetSelection)
                 .timeSkewSeconds(this.timeSkewSeconds)
                 .frequencyPerMinute(this.frequencyPerMinute)
                 .build();
@@ -170,5 +171,13 @@ public class Settings implements Serializable {
 
     public boolean isRunning() {
         return running;
+    }
+
+    public String getLogPatternPreSetSelection() {
+        return logPatternPreSetSelection;
+    }
+
+    public void setLogPatternPreSetSelection(String logPatternPreSetSelection) {
+        this.logPatternPreSetSelection = logPatternPreSetSelection;
     }
 }
