@@ -102,7 +102,7 @@ public class Settings implements Serializable {
     private LogFileDefinition jsfViewInputToLogFileDefinition() {
         return LogFileDefinition.builder()
                 .fileName(this.fileName)
-                .logPattern(this.logPatternPreSetSelection.isEmpty() ? this.logPattern : this.logPatternPreSetSelection)
+                .logPattern(this.logPatternPreSetSelection == null? this.logPattern : this.logPatternPreSetSelection)
                 .timeSkewSeconds(this.timeSkewSeconds)
                 .frequencyPerMinute(this.frequencyPerMinute)
                 .build();
