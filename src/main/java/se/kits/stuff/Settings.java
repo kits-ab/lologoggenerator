@@ -4,6 +4,9 @@ import ch.qos.logback.classic.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 import se.kits.stuff.model.LogFileDefinition;
+import se.kits.stuff.model.Presets;
+import se.kits.stuff.model.qualifiers.CustomLogPattern;
+import se.kits.stuff.model.qualifiers.LogPreset;
 import se.kits.stuff.tasks.GenerateLogTask;
 
 import javax.annotation.Resource;
@@ -13,6 +16,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
@@ -21,6 +25,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Named
@@ -44,6 +49,18 @@ public class Settings implements Serializable {
 
     @Resource
     private ManagedThreadFactory managedThreadFactory;
+
+    @Inject
+    @CustomLogPattern
+    private String customLogPattern;
+
+    @Inject
+    @LogPreset
+    private LinkedHashMap<String, String> logPatternPresets;
+
+    public LinkedHashMap<String, String> getLogPatternPresets() {
+        return logPatternPresets;
+    }
 
     public void start() {
         if (running) {
@@ -102,7 +119,7 @@ public class Settings implements Serializable {
     private LogFileDefinition jsfViewInputToLogFileDefinition() {
         return LogFileDefinition.builder()
                 .fileName(this.fileName)
-                .logPattern(this.logPatternPreSetSelection == null? this.logPattern : this.logPatternPreSetSelection)
+                .logPattern(this.logPatternPreSetSelection.equals(this.customLogPattern) ? this.logPattern : this.logPatternPreSetSelection)
                 .timeSkewSeconds(this.timeSkewSeconds)
                 .frequencyPerMinute(this.frequencyPerMinute)
                 .build();
