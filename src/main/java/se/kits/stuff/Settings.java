@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 import se.kits.stuff.model.LogFileDefinition;
-import se.kits.stuff.model.Presets;
 import se.kits.stuff.model.qualifiers.CustomLogPattern;
 import se.kits.stuff.model.qualifiers.LogPreset;
 import se.kits.stuff.tasks.GenerateLogTask;
@@ -46,6 +45,8 @@ public class Settings implements Serializable {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private ArrayList<GenerateLogTask> generateLogTasks = new ArrayList<>();
+
+    private boolean disableFreeTextLogPattern = false;
 
     @Resource
     private ManagedThreadFactory managedThreadFactory;
@@ -154,6 +155,10 @@ public class Settings implements Serializable {
         }
     }
 
+    public void logPatternPresetSelectionChanged() {
+        this.disableFreeTextLogPattern = !logPatternPreSetSelection.equals(customLogPattern);
+    }
+
     public String getFileName() {
         return fileName;
     }
@@ -196,5 +201,9 @@ public class Settings implements Serializable {
 
     public void setLogPatternPreSetSelection(String logPatternPreSetSelection) {
         this.logPatternPreSetSelection = logPatternPreSetSelection;
+    }
+
+    public boolean isDisableFreeTextLogPattern() {
+        return disableFreeTextLogPattern;
     }
 }

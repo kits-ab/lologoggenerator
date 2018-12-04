@@ -5,10 +5,10 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-<head>
+<h:head>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
     <title>lologog generator</title>
-</head>
+</h:head>
 
 <body>
 <div id="content">
@@ -22,14 +22,16 @@
                          />
             <p/>
             Log Pattern Preset:
-            <h:selectOneMenu value = "#{settings.logPatternPreSetSelection}">
-                <f:selectItems value="#{settings.logPatternPresets}" />
+            <h:selectOneMenu id="logPatternPreSetSelect" value = "#{settings.logPatternPreSetSelection}">
+                <f:selectItems value="#{settings.logPatternPresets}" var="logPatternPreSetSelection" />
+                <f:ajax listener="#{settings.logPatternPresetSelectionChanged}" render="logPatternFreeText"/>
+
             </h:selectOneMenu>
             <p/>
             Log Pattern (logback):
-            <h:inputText id="logPattern" value="#{settings.logPattern}"
+            <h:inputText id="logPatternFreeText" value="#{settings.logPattern}"
                          required="false" size="64"
-                         disabled="#{false}"
+                         disabled="#{settings.disableFreeTextLogPattern}"
             />
             <p/>
             Time Skew in Seconds:
