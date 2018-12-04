@@ -46,7 +46,7 @@ public class Settings implements Serializable {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private ArrayList<GenerateLogTask> generateLogTasks = new ArrayList<>();
 
-    private boolean disableFreeTextLogPattern = false;
+    private boolean disableFreeTextLogPattern = true;
 
     @Resource
     private ManagedThreadFactory managedThreadFactory;
