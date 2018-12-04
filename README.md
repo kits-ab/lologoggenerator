@@ -29,3 +29,6 @@ User can choose a log pattern preset or define their own pattern with freetext i
 
 User can run log generation through the JSF view `http://localhost:<host_port>/lologoggenerator/`
 
+## Useful links
+https://logback.qos.ch/manual/layouts.html
+
