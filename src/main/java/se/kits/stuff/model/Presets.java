@@ -16,9 +16,10 @@ public class Presets {
     @LogPreset
     private LinkedHashMap<String, String> buildLogPatternPresets() {
         LinkedHashMap<String, String> presetMap = new LinkedHashMap<>();
-        presetMap.put("Custom Log Pattern", CUSTOM_LOG_PATTERN_STRING);
         presetMap.put("Example Java EE format", "%date{ISO8601} [%thread] %-5level %logger{32} - %msg%n");
         presetMap.put("Logstash Encoder", "{\"@timestamp\": \"%date{yyyy-MM-dd}T%date{HH:mm:ss.SSS}\", \"@version\": int, \"message\": %msg, \"logger_name\": %logger, \"thread_name\": %thread \"level\": %-5level, \"level_value\": %level, \"stack_trace\": \"string\", \"X-Span-Id\": \"string\"}%n");
+        presetMap.put("web access log (nginx default format)", "$remote_addr - $remote_user [%date{dd/MMM/yyyy:HH:mm:ss Z}] \"$request\" $status $body_bytes_sent \"$http_referer\" \"$http_user_agent\"");
+        presetMap.put("Custom Log Pattern", CUSTOM_LOG_PATTERN_STRING);
         return presetMap;
     }
 }
