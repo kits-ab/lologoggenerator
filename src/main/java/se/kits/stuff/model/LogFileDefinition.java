@@ -20,4 +20,5 @@ public class LogFileDefinition {
     private String logPattern;
     private double timeSkewSeconds;
     private double frequencyPerMinute;
+    private String logPatternPreset;
 }

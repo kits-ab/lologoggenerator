@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 @Named
 @ApplicationScoped
@@ -53,7 +54,7 @@ public class Settings implements Serializable {
 
     @Inject
     @CustomLogPattern
-    private String customLogPattern;
+    private String customLogPatternKey;
 
     @Inject
     @LogPreset
@@ -120,7 +121,9 @@ public class Settings implements Serializable {
     private LogFileDefinition jsfViewInputToLogFileDefinition() {
         return LogFileDefinition.builder()
                 .fileName(this.fileName)
-                .logPattern(this.logPatternPreSetSelection.equals(this.customLogPattern) ? this.logPattern : this.logPatternPreSetSelection)
+                .logPatternPreset(this.logPatternPreSetSelection)
+                .logPattern(this.logPatternPreSetSelection.equals(this.customLogPatternKey) ?
+                        this.logPattern : logPatternPresets.get(this.logPatternPreSetSelection))
                 .timeSkewSeconds(this.timeSkewSeconds)
                 .frequencyPerMinute(this.frequencyPerMinute)
                 .build();
@@ -156,7 +159,11 @@ public class Settings implements Serializable {
     }
 
     public void logPatternPresetSelectionChanged() {
-        this.disableFreeTextLogPattern = !logPatternPreSetSelection.equals(customLogPattern);
+        this.disableFreeTextLogPattern = !logPatternPreSetSelection.equals(customLogPatternKey);
+    }
+
+    public Set<String> getPresetKeySet() {
+        return logPatternPresets.keySet();
     }
 
     public String getFileName() {

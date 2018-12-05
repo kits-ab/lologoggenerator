@@ -23,7 +23,7 @@
             <p/>
             Log Pattern Preset:
             <h:selectOneMenu id="logPatternPreSetSelect" value = "#{settings.logPatternPreSetSelection}">
-                <f:selectItems value="#{settings.logPatternPresets}" var="logPatternPreSetSelection" />
+                <f:selectItems value="#{settings.presetKeySet}" var="logPatternPreSetSelection" />
                 <f:ajax listener="#{settings.logPatternPresetSelectionChanged}" render="logPatternFreeText"/>
 
             </h:selectOneMenu>
