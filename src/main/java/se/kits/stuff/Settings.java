@@ -4,7 +4,7 @@ import ch.qos.logback.classic.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 import se.kits.stuff.model.LogFileDefinition;
-import se.kits.stuff.model.qualifiers.CustomLogPattern;
+import se.kits.stuff.model.LogPatternPresetKey;
 import se.kits.stuff.model.qualifiers.LogPreset;
 import se.kits.stuff.tasks.GenerateLogTask;
 
@@ -36,7 +36,7 @@ public class Settings implements Serializable {
     private boolean running = false;
     private String fileName;
     private String logPattern;
-    private String logPatternPreSetSelection;
+    private LogPatternPresetKey logPatternPreSetSelection;
     private int timeSkewSeconds;
     private int frequencyPerMinute;
 
@@ -53,14 +53,10 @@ public class Settings implements Serializable {
     private ManagedThreadFactory managedThreadFactory;
 
     @Inject
-    @CustomLogPattern
-    private String customLogPatternKey;
-
-    @Inject
     @LogPreset
-    private LinkedHashMap<String, String> logPatternPresets;
+    private LinkedHashMap<LogPatternPresetKey, String> logPatternPresets;
 
-    public LinkedHashMap<String, String> getLogPatternPresets() {
+    public LinkedHashMap<LogPatternPresetKey, String> getLogPatternPresets() {
         return logPatternPresets;
     }
 
@@ -122,7 +118,7 @@ public class Settings implements Serializable {
         return LogFileDefinition.builder()
                 .fileName(this.fileName)
                 .logPatternPreset(this.logPatternPreSetSelection)
-                .logPattern(this.logPatternPreSetSelection.equals(this.customLogPatternKey) ?
+                .logPattern(this.logPatternPreSetSelection.equals(LogPatternPresetKey.CUSTOM_PATTERN) ?
                         this.logPattern : logPatternPresets.get(this.logPatternPreSetSelection))
                 .timeSkewSeconds(this.timeSkewSeconds)
                 .frequencyPerMinute(this.frequencyPerMinute)
@@ -159,10 +155,10 @@ public class Settings implements Serializable {
     }
 
     public void logPatternPresetSelectionChanged() {
-        this.disableFreeTextLogPattern = !logPatternPreSetSelection.equals(customLogPatternKey);
+        this.disableFreeTextLogPattern = !logPatternPreSetSelection.equals(LogPatternPresetKey.CUSTOM_PATTERN);
     }
 
-    public Set<String> getPresetKeySet() {
+    public Set<LogPatternPresetKey> getPresetKeySet() {
         return logPatternPresets.keySet();
     }
 
@@ -202,11 +198,11 @@ public class Settings implements Serializable {
         return running;
     }
 
-    public String getLogPatternPreSetSelection() {
+    public LogPatternPresetKey getLogPatternPreSetSelection() {
         return logPatternPreSetSelection;
     }
 
-    public void setLogPatternPreSetSelection(String logPatternPreSetSelection) {
+    public void setLogPatternPreSetSelection(LogPatternPresetKey logPatternPreSetSelection) {
         this.logPatternPreSetSelection = logPatternPreSetSelection;
     }
 
