@@ -16,7 +16,7 @@ public class Presets {
         LinkedHashMap<LogPatternPresetKey, String> presetMap = new LinkedHashMap<>();
         presetMap.put(LogPatternPresetKey.WILDFLY, "%date{ISO8601} [%thread] %-5level %logger{32} - %msg%n");
         presetMap.put(LogPatternPresetKey.LOGSTASH_ENCODER, "{\"@timestamp\": \"%date{yyyy-MM-dd}T%date{HH:mm:ss.SSS}\", \"@version\": int, \"message\": %msg, \"logger_name\": %logger, \"thread_name\": %thread \"level\": %-5level, \"level_value\": %level, \"stack_trace\": \"string\", \"X-Span-Id\": \"string\"}%n");
-        presetMap.put(LogPatternPresetKey.WEB_ACCESS_LOG, "$remote_addr - $remote_user [%date{dd/MMM/yyyy:HH:mm:ss Z}] \"$request\" $status $body_bytes_sent \"$http_referer\" \"$http_user_agent\"");
+        presetMap.put(LogPatternPresetKey.WEB_ACCESS_LOG, "$remote_addr - $remote_user [$time_local] \"$request\" $status $body_bytes_sent \"$http_referer\" \"$http_user_agent\"");
         presetMap.put(LogPatternPresetKey.CUSTOM_PATTERN, CUSTOM_LOG_PATTERN_VALUE);
         return presetMap;
     }
