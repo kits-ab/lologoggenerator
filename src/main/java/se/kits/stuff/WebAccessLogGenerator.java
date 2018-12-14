@@ -1,5 +1,7 @@
 package se.kits.stuff;
 
+import se.kits.stuff.model.WeightedOption;
+
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -22,6 +24,21 @@ public class WebAccessLogGenerator {
     private static final String HTTP_USER_AGENT = "$http_user_agent";
     private static final String TIME_LOCAL = "$time_local";
 
+    private static final List<WeightedOption> REQUEST_TYPES = Collections.unmodifiableList(
+            Arrays.asList(
+                    new WeightedOption("POST /users HTTP/1.1", 0.2),
+                    new WeightedOption("GET /users/list HTTP/1.1", 0.8)
+            )
+    );
+
+    private static final List<WeightedOption> STATUS_TYPES = Collections.unmodifiableList(
+            Arrays.asList(
+                    new WeightedOption("200", 0.7),
+                    new WeightedOption("400", 0.2),
+                    new WeightedOption("500", 0.1)
+            )
+    );
+
     private static final List<String> variableList = Collections.unmodifiableList(Arrays.asList(
             REMOTE_ADDR,
             REMOTE_USER,
@@ -33,8 +50,6 @@ public class WebAccessLogGenerator {
             HTTP_USER_AGENT
     ));
 
-    private static Map<String, String> CONTENT_MAP = createWebAccessLogContent();
-
     public WebAccessLogGenerator() {
 
     }
@@ -43,8 +58,9 @@ public class WebAccessLogGenerator {
         Map<String, String> map = new HashMap<>();
         map.put(REMOTE_ADDR, "38.39.40.41");
         map.put(REMOTE_USER, "dummy-user");
-        map.put(REQUEST, "GET /news/53f8d72920ba2744fe873ebc.html HTTP/1.1");
-        map.put(STATUS, "200");
+        map.put(REQUEST, WeightedOption.rollWeightedOptions(REQUEST_TYPES));
+        map.put(TIME_LOCAL, getTimestamp());
+        map.put(STATUS, WeightedOption.rollWeightedOptions(STATUS_TYPES));
         map.put(BODY_BYTES_SENT, "3021");
         map.put(HTTP_REFERER, "-");
         map.put(HTTP_USER_AGENT, "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/67.0.3396.99 Chrome/67.0.3396.99 Safari/537.36");
@@ -53,15 +69,16 @@ public class WebAccessLogGenerator {
     }
 
     public static String replaceVariablesInPattern(String parameterizedLogRow) {
+        Map<String, String> replacementMap = createWebAccessLogContent();
         for (String variable : variableList) {
-            if (variable.equals(TIME_LOCAL)) {
-                OffsetDateTime now = OffsetDateTime.now(ZoneOffset.ofHours(1));
-                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(TIME_LOCAL_PATTERN);
-                parameterizedLogRow = parameterizedLogRow.replace(variable, now.format(dateTimeFormatter));
-            } else {
-                parameterizedLogRow = parameterizedLogRow.replace(variable, CONTENT_MAP.get(variable));
-            }
+            parameterizedLogRow = parameterizedLogRow.replace(variable, replacementMap.get(variable));
         }
         return parameterizedLogRow;
+    }
+
+    private static String getTimestamp() {
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.ofHours(1));
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(TIME_LOCAL_PATTERN);
+        return now.format(dateTimeFormatter);
     }
 }
