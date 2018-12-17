@@ -1,12 +1,14 @@
 package se.kits.stuff.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Value;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Value
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class WeightedOption {
     private String option;
     private double weight;
