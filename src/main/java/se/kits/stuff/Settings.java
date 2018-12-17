@@ -40,9 +40,9 @@ public class Settings implements Serializable {
     private int timeSkewSeconds;
     private int frequencyPerMinute;
 
-    private static final String APPLOLOGOG_DIR = "/app/lologog/";
+    private static final String APPLOLOGOG_CONFIG_DIR = "/app/lologog/config/";
     private static final String CONFIG_FILENAME = "logfile_config.json";
-    private static final String CONFIG_FILEPATH = APPLOLOGOG_DIR + CONFIG_FILENAME;
+    private static final String CONFIG_FILEPATH = APPLOLOGOG_CONFIG_DIR + CONFIG_FILENAME;
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private ArrayList<GenerateLogTask> generateLogTasks = new ArrayList<>();
