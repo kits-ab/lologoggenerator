@@ -20,7 +20,7 @@ docker build -t <image_tag> . \
 
 Map `host_path` to `container_path` with `-v <host_path>:<container_path>` to appoint file location on the host machine.
 
-It is presumed that `host_path` exists on the host machine.
+It is presumed that `<host_path>` and `<host_path>/config`exists on the host machine with read/write rights.
 
 ## Using
 User can create logfile definitions through REST endpoints or `http://localhost:<host_port>/lologoggenerator/`
