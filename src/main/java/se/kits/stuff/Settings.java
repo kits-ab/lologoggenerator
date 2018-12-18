@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 import se.kits.stuff.model.LogFileDefinition;
 import se.kits.stuff.model.LogPatternPresetKey;
+import se.kits.stuff.model.WebAccessLogGeneratorProfile;
 import se.kits.stuff.model.qualifiers.LogPreset;
 import se.kits.stuff.tasks.GenerateLogTask;
 
@@ -95,9 +96,8 @@ public class Settings implements Serializable {
     public void writeNewLogFileConfig() {
         LogFileDefinition logFileDefinition = jsfViewInputToLogFileDefinition();
         LOGGER.info("New config to file: {}", logFileDefinition);
-        List<LogFileDefinition> logFileDefinitions = new ArrayList<>();
-        logFileDefinitions.add(logFileDefinition);
-        writeNewConfigToFile(logFileDefinitions);
+        writeNewConfigToFile(Collections.singletonList(logFileDefinition));
+        WebAccessLogGeneratorProfile.writeWebAccessLogGeneratorProfileToFile(Collections.emptyMap());
         LOGGER.info("config file overwritten: {}", CONFIG_FILENAME);
     }
 
