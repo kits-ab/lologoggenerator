@@ -111,7 +111,7 @@ public class Settings implements Serializable {
         } else {
             writeNewConfigToFile(Collections.singletonList(logFileDefinition));
         }
-        LOGGER.info("config added to file: {}", CONFIG_FILENAME);
+        LOGGER.info("config for {} added to file: {}", logFileDefinition.getLogPatternPreset(), CONFIG_FILENAME);
     }
 
     private LogFileDefinition jsfViewInputToLogFileDefinition() {
