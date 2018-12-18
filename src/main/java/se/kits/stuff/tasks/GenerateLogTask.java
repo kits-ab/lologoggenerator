@@ -12,9 +12,10 @@ import se.kits.stuff.model.LogFileDefinition;
 
 public class GenerateLogTask implements Runnable {
 
-    private static final Logger LOGGER = (Logger) LoggerFactory.getLogger(WriteTask.class);
+    private static final Logger LOGGER = (Logger) LoggerFactory.getLogger(GenerateLogTask.class);
     private static final String APPENDER_SUFFIX = "-appender";
     private static final String MESSAGE_NEWLINE_PATTERN = "%msg%n";
+    private static final String LOGGER_SUFFIX = "-logger";
     private LogFileDefinition logFileDefinition;
     private static final String APPLOLOGOG_DIR = "/app/lologog/";
 
@@ -29,17 +30,17 @@ public class GenerateLogTask implements Runnable {
     }
 
     private String produceLogRowMessage(String presetString) {
-        switch (logFileDefinition.getLogPatternPreset()) {
+        switch (this.logFileDefinition.getLogPatternPreset()) {
             case WEB_ACCESS_LOG:
                 return WebAccessLogGenerator.replaceVariablesInPattern(presetString);
-//            case LOGSTASH_ENCODER:
-//                break;
-//            case WILDFLY:
-//                break;
-//            case SPRING:
-//                break;
-//            case CUSTOM_PATTERN:
-//                break;
+            case LOGSTASH_ENCODER:
+                return this.logFileDefinition.getLogPattern();
+            case WILDFLY:
+                break;
+            case SPRING:
+                break;
+            case CUSTOM_PATTERN:
+                break;
             default:
                 LOGGER.error("No matching log pattern preset keys!");
                 break;
@@ -51,12 +52,14 @@ public class GenerateLogTask implements Runnable {
     public void run() {
         Logger customLogger = createFileLogger(this.logFileDefinition);
         try {
-            Thread.sleep((long) (1000 * logFileDefinition.getTimeSkewSeconds()));
+            Thread.sleep((long) (1000 * this.logFileDefinition.getTimeSkewSeconds()));
             while (this.running) {
 
-                customLogger.info(produceLogRowMessage(logFileDefinition.getLogPattern()));
+                String answer = useLogbackSyntax(this.logFileDefinition) ?
+                        "An informative logger message..." : produceLogRowMessage(this.logFileDefinition.getLogPattern());
+                customLogger.info(answer);
 
-                double frequencyPerMinute = logFileDefinition.getFrequencyPerMinute();
+                double frequencyPerMinute = this.logFileDefinition.getFrequencyPerMinute();
                 if (frequencyPerMinute > 0) {
                     double v = 60.0 / frequencyPerMinute;
                     long delayMillis = (long) (v * 1000);
@@ -69,12 +72,26 @@ public class GenerateLogTask implements Runnable {
         }
     }
 
+    private static boolean useLogbackSyntax(LogFileDefinition logFileDefinition) {
+        switch (logFileDefinition.getLogPatternPreset()) {
+            case SPRING:
+            case WILDFLY:
+            case CUSTOM_PATTERN:
+                return true;
+            case LOGSTASH_ENCODER:
+            case WEB_ACCESS_LOG:
+            default:
+                return false;
+        }
+    }
+
     private static Logger createFileLogger(LogFileDefinition logFileDefinition) {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
         patternLayoutEncoder.setContext(loggerContext);
+        String tempPatternOfChoice = useLogbackSyntax(logFileDefinition) ? logFileDefinition.getLogPattern() : MESSAGE_NEWLINE_PATTERN;
 //        patternLayoutEncoder.setPattern(logFileDefinition.getLogPattern());
-        patternLayoutEncoder.setPattern(MESSAGE_NEWLINE_PATTERN);
+        patternLayoutEncoder.setPattern(tempPatternOfChoice);
         patternLayoutEncoder.start();
 
         FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
@@ -84,7 +101,7 @@ public class GenerateLogTask implements Runnable {
         fileAppender.setContext(loggerContext);
         fileAppender.start();
 
-        Logger logger = (Logger) LoggerFactory.getLogger(logFileDefinition.getFileName());
+        Logger logger = (Logger) LoggerFactory.getLogger(logFileDefinition.getFileName() + LOGGER_SUFFIX);
         logger.addAppender(fileAppender);
         logger.setLevel(Level.INFO);
 //        logger.setAdditive(false);
