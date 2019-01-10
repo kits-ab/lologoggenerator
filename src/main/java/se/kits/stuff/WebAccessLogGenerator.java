@@ -4,9 +4,6 @@ import se.kits.stuff.model.WebAccessLogGeneratorData;
 import se.kits.stuff.model.WebAccessLogGeneratorProfile;
 import se.kits.stuff.model.WeightedOption;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +27,7 @@ public class WebAccessLogGenerator extends WebAccessLogGeneratorData {
         resultMap.put(REMOTE_ADDR, WeightedOption.rollWeightedOptions(customProfileMap.getOrDefault(REMOTE_ADDR, IP_ADDRESSES)));
         resultMap.put(REMOTE_USER, WeightedOption.rollWeightedOptions(customProfileMap.getOrDefault(REMOTE_USER, USERS)));
         resultMap.put(REQUEST, WeightedOption.rollWeightedOptions(customProfileMap.getOrDefault(REQUEST, REQUEST_TYPES)));
-        resultMap.put(TIME_LOCAL, getTimestamp());
+        resultMap.put(TIME_LOCAL, Utility.getFormattedTimestamp(TIME_LOCAL_PATTERN, UTC_OFFSET_HOURS));
         resultMap.put(STATUS, WeightedOption.rollWeightedOptions(customProfileMap.getOrDefault(STATUS, STATUS_TYPES)));
         resultMap.put(BODY_BYTES_SENT, String.valueOf(random.nextInt(HTTP_BODY_BYTES_SENT) + MINIMUM_BYTES_SENT));
         resultMap.put(HTTP_REFERER, WeightedOption.rollWeightedOptions(customProfileMap.getOrDefault(HTTP_REFERER, REFERERS)));
@@ -41,16 +38,10 @@ public class WebAccessLogGenerator extends WebAccessLogGeneratorData {
 
     public static String replaceVariablesInPattern(String parameterizedLogRow) {
         Map<String, List<WeightedOption>> userDefinedProfileMap = WebAccessLogGeneratorProfile.readWebAccessLogGeneratorProfileFromFile();
-        Map<String, String> replacementMap = createWebAccessLogContent(userDefinedProfileMap); // todo temp
+        Map<String, String> replacementMap = createWebAccessLogContent(userDefinedProfileMap);
         for (String variable : VARIABLE_LIST) {
             parameterizedLogRow = parameterizedLogRow.replace(variable, replacementMap.get(variable));
         }
         return parameterizedLogRow;
-    }
-
-    private static String getTimestamp() {
-        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.ofHours(UTC_OFFSET_HOURS));
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(TIME_LOCAL_PATTERN);
-        return now.format(dateTimeFormatter);
     }
 }

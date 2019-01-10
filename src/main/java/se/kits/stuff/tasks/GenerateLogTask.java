@@ -7,6 +7,7 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
 import org.slf4j.LoggerFactory;
+import se.kits.stuff.SpringLogGenerator;
 import se.kits.stuff.WebAccessLogGenerator;
 import se.kits.stuff.model.LogFileDefinition;
 
@@ -29,23 +30,27 @@ public class GenerateLogTask implements Runnable {
         this.running = true;
     }
 
-    private String produceLogRowMessage(String presetString) {
-        switch (this.logFileDefinition.getLogPatternPreset()) {
+    private String produceLogRowMessage(LogFileDefinition logFileDefinition) {
+        switch (logFileDefinition.getLogPatternPreset()) {
             case WEB_ACCESS_LOG:
-                return WebAccessLogGenerator.replaceVariablesInPattern(presetString);
+                return WebAccessLogGenerator.replaceVariablesInPattern(logFileDefinition.getLogPattern());
             case LOGSTASH_ENCODER:
-                return this.logFileDefinition.getLogPattern();
-            case WILDFLY:
-                break;
+                return logFileDefinition.getLogPattern();
             case SPRING:
-                break;
+                return SpringLogGenerator.replaceVariablesInPattern(logFileDefinition.getLogPattern());
+            case WILDFLY:
             case CUSTOM_PATTERN:
-                break;
+                return "An informative logger message...";
             default:
                 LOGGER.error("No matching log pattern preset keys!");
                 break;
         }
         return null;
+    }
+
+    private void outputOneLogLine(Logger logger, LogFileDefinition logFileDefinition) {
+        String answer = produceLogRowMessage(logFileDefinition);
+        logger.info(answer);
     }
 
     @Override
@@ -55,9 +60,7 @@ public class GenerateLogTask implements Runnable {
             Thread.sleep((long) (1000 * this.logFileDefinition.getTimeSkewSeconds()));
             while (this.running) {
 
-                String answer = useLogbackSyntax(this.logFileDefinition) ?
-                        "An informative logger message..." : produceLogRowMessage(this.logFileDefinition.getLogPattern());
-                customLogger.info(answer);
+                outputOneLogLine(customLogger, this.logFileDefinition);
 
                 double frequencyPerMinute = this.logFileDefinition.getFrequencyPerMinute();
                 if (frequencyPerMinute > 0) {
@@ -74,10 +77,10 @@ public class GenerateLogTask implements Runnable {
 
     private static boolean useLogbackSyntax(LogFileDefinition logFileDefinition) {
         switch (logFileDefinition.getLogPatternPreset()) {
-            case SPRING:
             case WILDFLY:
             case CUSTOM_PATTERN:
                 return true;
+            case SPRING:
             case LOGSTASH_ENCODER:
             case WEB_ACCESS_LOG:
             default:
@@ -103,7 +106,7 @@ public class GenerateLogTask implements Runnable {
 
         Logger logger = (Logger) LoggerFactory.getLogger(logFileDefinition.getFileName() + LOGGER_SUFFIX);
         logger.addAppender(fileAppender);
-        logger.setLevel(Level.INFO);
+        logger.setLevel(Level.ALL);
 //        logger.setAdditive(false);
 
         return logger;
