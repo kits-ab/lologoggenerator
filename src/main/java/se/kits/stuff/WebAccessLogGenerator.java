@@ -22,26 +22,29 @@ public class WebAccessLogGenerator extends WebAccessLogGeneratorData {
 
     }
 
-    private static Map<String, String> createWebAccessLogContent(Map<String, List<WeightedOption>> customProfileMap) {
-        Map<String, String> resultMap = new HashMap<>();
-        resultMap.put(REMOTE_ADDR, WeightedOption.rollWeightedOptions(customProfileMap.getOrDefault(REMOTE_ADDR, IP_ADDRESSES)));
-        resultMap.put(REMOTE_USER, WeightedOption.rollWeightedOptions(customProfileMap.getOrDefault(REMOTE_USER, USERS)));
-        resultMap.put(REQUEST, WeightedOption.rollWeightedOptions(customProfileMap.getOrDefault(REQUEST, REQUEST_TYPES)));
-        resultMap.put(TIME_LOCAL, Utility.getFormattedTimestamp(TIME_LOCAL_PATTERN, UTC_OFFSET_HOURS));
-        resultMap.put(STATUS, WeightedOption.rollWeightedOptions(customProfileMap.getOrDefault(STATUS, STATUS_TYPES)));
-        resultMap.put(BODY_BYTES_SENT, String.valueOf(random.nextInt(HTTP_BODY_BYTES_SENT) + MINIMUM_BYTES_SENT));
-        resultMap.put(HTTP_REFERER, WeightedOption.rollWeightedOptions(customProfileMap.getOrDefault(HTTP_REFERER, REFERERS)));
-        resultMap.put(HTTP_USER_AGENT, WeightedOption.rollWeightedOptions(customProfileMap.getOrDefault(HTTP_USER_AGENT, USER_AGENTS)));
-
-        return Collections.unmodifiableMap(resultMap);
+    public static String replaceVariablesInPattern(String parameterizedLogRow, Map<String, String> queuedMap) {
+        Map<String, List<WeightedOption<String>>> userDefinedProfileMap = WebAccessLogGeneratorProfile.readWebAccessLogGeneratorProfileFromFile();
+        for (String variable : VARIABLE_LIST) {
+            if (DEFAULT_OPTIONS_MAPPING.containsKey(variable)) {
+                parameterizedLogRow = parameterizedLogRow.replace(variable, selectReplacement(variable, userDefinedProfileMap, queuedMap));
+            }
+        }
+        parameterizedLogRow = parameterizedLogRow.replace(BODY_BYTES_SENT, String.valueOf(random.nextInt(HTTP_BODY_BYTES_SENT) + MINIMUM_BYTES_SENT));
+        return parameterizedLogRow.replace(TIME_LOCAL, Utility.getFormattedTimestamp(TIME_LOCAL_PATTERN, UTC_OFFSET_HOURS));
     }
 
-    public static String replaceVariablesInPattern(String parameterizedLogRow) {
-        Map<String, List<WeightedOption>> userDefinedProfileMap = WebAccessLogGeneratorProfile.readWebAccessLogGeneratorProfileFromFile();
-        Map<String, String> replacementMap = createWebAccessLogContent(userDefinedProfileMap);
-        for (String variable : VARIABLE_LIST) {
-            parameterizedLogRow = parameterizedLogRow.replace(variable, replacementMap.get(variable));
+    private static String selectReplacement(String key, Map<String, List<WeightedOption<String>>> customProfileMap, Map<String, String> queuedMap) {
+        return queuedMap.containsKey(key) ? queuedMap.get(key) : Utility.rollWeightedOptions(customProfileMap.getOrDefault(key, DEFAULT_OPTIONS_MAPPING.get(key)));
+    }
+
+    public static Map<String, String> generateStatusCodeForQueue(SpringLogGenerator.LoglevelMessageStatusCodeConnection loglevelMessageStatusCodeConnection) {
+        Integer httpStatusCode = loglevelMessageStatusCodeConnection.getLogMessageAndStatusCode().getHttpStatusCode();
+        if (httpStatusCode != null) {
+            Map<String, String> replacements = new HashMap<>();
+            replacements.put(WebAccessLogGeneratorData.STATUS, String.valueOf(httpStatusCode));
+            return replacements;
+        } else {
+            return Collections.emptyMap();
         }
-        return parameterizedLogRow;
     }
 }

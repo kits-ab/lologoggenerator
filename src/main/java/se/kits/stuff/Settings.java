@@ -27,7 +27,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Named
 @ApplicationScoped
@@ -57,6 +60,8 @@ public class Settings implements Serializable {
     @LogPreset
     private LinkedHashMap<LogPatternPresetKey, String> logPatternPresets;
 
+    private ConcurrentHashMap<GenerateLogTask, ConcurrentLinkedQueue<Map<String, String>>> queueTracker = new ConcurrentHashMap<>();
+
     public LinkedHashMap<LogPatternPresetKey, String> getLogPatternPresets() {
         return logPatternPresets;
     }
@@ -68,7 +73,7 @@ public class Settings implements Serializable {
             ArrayList<LogFileDefinition> logFileDefinitions = readConfigsFromFile();
             if (logFileDefinitions != null) {
                 for (LogFileDefinition logFileDefinition : logFileDefinitions) {
-                    GenerateLogTask generateLogTask = new GenerateLogTask(logFileDefinition);
+                    GenerateLogTask generateLogTask = new GenerateLogTask(logFileDefinition, queueTracker);
                     Thread threadForLogFileDefinition = managedThreadFactory.newThread(generateLogTask);
                     threadForLogFileDefinition.start();
                     this.generateLogTasks.add(generateLogTask);
@@ -87,6 +92,7 @@ public class Settings implements Serializable {
             for (GenerateLogTask generateLogTask : this.generateLogTasks) {
                 generateLogTask.setRunning(running);
             }
+            queueTracker.clear();
             LOGGER.info("The log generation has been stopped.");
         } else {
             LOGGER.info("Stop button clicked when no loggers are running");

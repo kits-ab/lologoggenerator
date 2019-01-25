@@ -1,5 +1,8 @@
 package se.kits.stuff.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Value;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,90 +29,100 @@ public abstract class SpringLogGeneratorData {
             )
     );
 
-    public static final List<WeightedOption> LOG_LEVELS = Collections.unmodifiableList(
+    public static final List<WeightedOption<String>> LOG_LEVELS = Collections.unmodifiableList(
             Arrays.asList(
-                    new WeightedOption("TRACE", 0.1),
-                    new WeightedOption("DEBUG", 0.1),
-                    new WeightedOption("INFO", 0.6),
-                    new WeightedOption("WARN", 0.1),
-                    new WeightedOption("ERROR", 0.1)
+                    new WeightedOption<>(LogLevel.TRACE.toString(), 0.1),
+                    new WeightedOption<>(LogLevel.DEBUG.toString(), 0.1),
+                    new WeightedOption<>(LogLevel.INFO.toString(), 0.6),
+                    new WeightedOption<>(LogLevel.WARN.toString(), 0.1),
+                    new WeightedOption<>(LogLevel.ERROR.toString(), 0.1)
             )
     );
 
-    public static final List<WeightedOption> THREADS = Collections.unmodifiableList(
+    public static final List<WeightedOption<String>> THREADS = Collections.unmodifiableList(
             Arrays.asList(
-                    new WeightedOption("Thread1", 0.5),
-                    new WeightedOption("Thread2", 0.2),
-                    new WeightedOption("Thread3", 0.2),
-                    new WeightedOption("Thread4", 0.1)
+                    new WeightedOption<>("Thread1", 0.5),
+                    new WeightedOption<>("Thread2", 0.2),
+                    new WeightedOption<>("Thread3", 0.2),
+                    new WeightedOption<>("Thread4", 0.1)
             )
     );
 
-    public static final List<WeightedOption> LOGGERS = Collections.unmodifiableList(
+    public static final List<WeightedOption<String>> LOGGERS = Collections.unmodifiableList(
             Arrays.asList(
-                    new WeightedOption("o.s.d.r.w.RepositoryRestHandlerMapping", 0.2),
-                    new WeightedOption("o.s.b.w.embedded.tomcat.TomcatWebServer", 0.2),
-                    new WeightedOption("s.w.s.m.m.a.RequestMappingHandlerMapping", 0.2),
-                    new WeightedOption("o.s.d.n.mapping.Neo4jPersistentProperty", 0.2),
-                    new WeightedOption("o.s.d.r.w.RepositoryRestHandlerAdapter", 0.2)
+                    new WeightedOption<>("o.s.d.r.w.RepositoryRestHandlerMapping", 0.2),
+                    new WeightedOption<>("o.s.b.w.embedded.tomcat.TomcatWebServer", 0.2),
+                    new WeightedOption<>("s.w.s.m.m.a.RequestMappingHandlerMapping", 0.2),
+                    new WeightedOption<>("o.s.d.n.mapping.Neo4jPersistentProperty", 0.2),
+                    new WeightedOption<>("o.s.d.r.w.RepositoryRestHandlerAdapter", 0.2)
             )
     );
 
-    public static final List<WeightedOption> TRACE_MESSAGES = Collections.unmodifiableList(
+    @Value
+    @AllArgsConstructor
+    public static class LogMessageAndStatusCode {
+        private String logMessage;
+        private Integer httpStatusCode;
+
+        public LogMessageAndStatusCode(String logMessage) {
+            this.logMessage = logMessage;
+            this.httpStatusCode = null;
+        }
+    }
+
+    public static final List<WeightedOption<LogMessageAndStatusCode>> TRACE_MESSAGES = Collections.unmodifiableList(
             Arrays.asList(
-                    new WeightedOption("trace message 1", 0.2),
-                    new WeightedOption("trace message 2", 0.2),
-                    new WeightedOption("trace message 3", 0.2),
-                    new WeightedOption("trace message 4", 0.2),
-                    new WeightedOption("trace message 5", 0.2)
+                    new WeightedOption<>(new LogMessageAndStatusCode("trace message 1"), 0.5),
+                    new WeightedOption<>(new LogMessageAndStatusCode("trace message 2"), 0.5)
             )
     );
 
-    public static final List<WeightedOption> DEBUG_MESSAGES = Collections.unmodifiableList(
+    public static final List<WeightedOption<LogMessageAndStatusCode>> DEBUG_MESSAGES = Collections.unmodifiableList(
             Arrays.asList(
-                    new WeightedOption("debug message 1", 0.2),
-                    new WeightedOption("debug message 2", 0.2),
-                    new WeightedOption("debug message 3", 0.2),
-                    new WeightedOption("debug message 4", 0.2),
-                    new WeightedOption("debug message 5", 0.2)
+                    new WeightedOption<>(new LogMessageAndStatusCode("debug message 1"), 0.5),
+                    new WeightedOption<>(new LogMessageAndStatusCode("debug message 2"), 0.5)
             )
     );
 
-    public static final List<WeightedOption> INFO_MESSAGES = Collections.unmodifiableList(
+    public static final List<WeightedOption<LogMessageAndStatusCode>> INFO_MESSAGES = Collections.unmodifiableList(
             Arrays.asList(
-                    new WeightedOption("User changed values", 0.2),
-                    new WeightedOption("Endpoint accessed", 0.2),
-                    new WeightedOption("this thing started", 0.2),
-                    new WeightedOption("this thing stopped", 0.2),
-                    new WeightedOption("DB query", 0.2)
+                    new WeightedOption<>(new LogMessageAndStatusCode("info message 1"), 0.2),
+                    new WeightedOption<>(new LogMessageAndStatusCode("Deleted data", 200), 0.1),
+                    new WeightedOption<>(new LogMessageAndStatusCode("Created data", 201), 0.1),
+                    new WeightedOption<>(new LogMessageAndStatusCode("Fetched data", 200), 0.1),
+                    new WeightedOption<>(new LogMessageAndStatusCode("Changed data", 200), 0.1),
+                    new WeightedOption<>(new LogMessageAndStatusCode("Bad request", 400), 0.1),
+                    new WeightedOption<>(new LogMessageAndStatusCode("Unauthorized", 401), 0.1),
+                    new WeightedOption<>(new LogMessageAndStatusCode("Forbidden", 403), 0.1),
+                    new WeightedOption<>(new LogMessageAndStatusCode("Not found", 404), 0.1)
             )
     );
 
-    public static final List<WeightedOption> WARN_MESSAGES = Collections.unmodifiableList(
+    public static final List<WeightedOption<LogMessageAndStatusCode>> WARN_MESSAGES = Collections.unmodifiableList(
             Arrays.asList(
-                    new WeightedOption("check this", 0.5),
-                    new WeightedOption("check that", 0.5)
+                    new WeightedOption<>(new LogMessageAndStatusCode("warning message 1"), 0.5),
+                    new WeightedOption<>(new LogMessageAndStatusCode("warning message 2"), 0.5)
             )
     );
 
-    public static final List<WeightedOption> ERROR_MESSAGES = Collections.unmodifiableList(
+    public static final List<WeightedOption<LogMessageAndStatusCode>> ERROR_MESSAGES = Collections.unmodifiableList(
             Arrays.asList(
-                    new WeightedOption("DB error", 0.25),
-                    new WeightedOption("IO error", 0.25),
-                    new WeightedOption("unexpected meltdown", 0.25),
-                    new WeightedOption("timeout from service 1", 0.25)
+                    new WeightedOption<>(new LogMessageAndStatusCode("DB error", 500), 0.2),
+                    new WeightedOption<>(new LogMessageAndStatusCode("IO error", 500), 0.2),
+                    new WeightedOption<>(new LogMessageAndStatusCode("Runtime error", 500), 0.2),
+                    new WeightedOption<>(new LogMessageAndStatusCode("Timeout from service 1", 504), 0.4)
             )
     );
 
-    public static final Map<String, List<WeightedOption>> MESSAGES_PER_LEVEL = createMessagesPerLevelMap();
+    public static final Map<LogLevel, List<WeightedOption<LogMessageAndStatusCode>>> MESSAGES_PER_LEVEL = createMessagesPerLevelMap();
 
-    private static Map<String, List<WeightedOption>> createMessagesPerLevelMap() {
-        Map<String, List<WeightedOption>> map = new HashMap<>();
-        map.put("TRACE", TRACE_MESSAGES);
-        map.put("DEBUG", DEBUG_MESSAGES);
-        map.put("INFO", INFO_MESSAGES);
-        map.put("WARN", WARN_MESSAGES);
-        map.put("ERROR", ERROR_MESSAGES);
+    private static Map<LogLevel, List<WeightedOption<LogMessageAndStatusCode>>> createMessagesPerLevelMap() {
+        Map<LogLevel, List<WeightedOption<LogMessageAndStatusCode>>> map = new HashMap<>();
+        map.put(LogLevel.TRACE, TRACE_MESSAGES);
+        map.put(LogLevel.DEBUG, DEBUG_MESSAGES);
+        map.put(LogLevel.INFO, INFO_MESSAGES);
+        map.put(LogLevel.WARN, WARN_MESSAGES);
+        map.put(LogLevel.ERROR, ERROR_MESSAGES);
         return map;
     }
 }

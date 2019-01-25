@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class WebAccessLogGeneratorProfile {
 
-    private static final HashMap<String, List<WeightedOption>> PROFILE = new HashMap<>();
+    private static final HashMap<String, List<WeightedOption<String>>> PROFILE = new HashMap<>();
 
     private static final String APPLOLOGOG_CONFIG_DIR = "/app/lologog/config/";
     private static final String WEBACCESSLOG_PROFILE = "webaccesslog_profile.json";
@@ -24,15 +24,15 @@ public class WebAccessLogGeneratorProfile {
     private static final Logger LOGGER = (Logger) LoggerFactory.getLogger(WebAccessLogGenerator.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    public void setNewOptions(String key, List<WeightedOption> newOptions) {
+    public void setNewOptions(String key, List<WeightedOption<String>> newOptions) {
         PROFILE.put(key, newOptions);
     }
 
-    public HashMap<String, List<WeightedOption>> getProfile() {
+    public HashMap<String, List<WeightedOption<String>>> getProfile() {
         return PROFILE;
     }
 
-    public static void writeWebAccessLogGeneratorProfileToFile(Map<String, List<WeightedOption>> customProfileMap) {
+    public static void writeWebAccessLogGeneratorProfileToFile(Map<String, List<WeightedOption<String>>> customProfileMap) {
         try {
             Files.write(Paths.get(WEBACCESSLOG_PROFILE_FILEPATH), OBJECT_MAPPER.writeValueAsString(customProfileMap).getBytes());
             LOGGER.info("Profile written to: {}", WEBACCESSLOG_PROFILE_FILEPATH);
@@ -41,10 +41,10 @@ public class WebAccessLogGeneratorProfile {
         }
     }
 
-    public static Map<String, List<WeightedOption>> readWebAccessLogGeneratorProfileFromFile() {
+    public static Map<String, List<WeightedOption<String>>> readWebAccessLogGeneratorProfileFromFile() {
         try {
             byte[] bytes = Files.readAllBytes(Paths.get(WEBACCESSLOG_PROFILE_FILEPATH));
-            TypeReference<Map<String, List<WeightedOption>>> typeReference = new TypeReference<Map<String, List<WeightedOption>>>() {
+            TypeReference<Map<String, List<WeightedOption<String>>>> typeReference = new TypeReference<Map<String, List<WeightedOption<String>>>>() {
             };
             LOGGER.info("Read Web Access Log Profile from file: {}", WEBACCESSLOG_PROFILE_FILEPATH);
             return OBJECT_MAPPER.readValue(bytes, typeReference);

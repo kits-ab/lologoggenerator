@@ -10,6 +10,12 @@ import org.slf4j.LoggerFactory;
 import se.kits.stuff.SpringLogGenerator;
 import se.kits.stuff.WebAccessLogGenerator;
 import se.kits.stuff.model.LogFileDefinition;
+import se.kits.stuff.model.LogPatternPresetKey;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class GenerateLogTask implements Runnable {
 
@@ -21,23 +27,32 @@ public class GenerateLogTask implements Runnable {
     private static final String APPLOLOGOG_DIR = "/app/lologog/";
 
     private boolean running;
+    private ConcurrentHashMap<GenerateLogTask, ConcurrentLinkedQueue<Map<String, String>>> queueTracker;
+    private ConcurrentLinkedQueue<Map<String, String>> replacerQueue = new ConcurrentLinkedQueue<>();
 
     public GenerateLogTask() {
     }
 
-    public GenerateLogTask(LogFileDefinition logFileDefinition) {
+    public GenerateLogTask(LogFileDefinition logFileDefinition,
+                           ConcurrentHashMap<GenerateLogTask, ConcurrentLinkedQueue<Map<String, String>>> queueTracker) {
         this.logFileDefinition = logFileDefinition;
         this.running = true;
+        this.queueTracker = queueTracker;
+        this.queueTracker.put(this, replacerQueue);
     }
 
     private String produceLogRowMessage(LogFileDefinition logFileDefinition) {
         switch (logFileDefinition.getLogPatternPreset()) {
             case WEB_ACCESS_LOG:
-                return WebAccessLogGenerator.replaceVariablesInPattern(logFileDefinition.getLogPattern());
+                ConcurrentLinkedQueue<Map<String, String>> replacerQueue = queueTracker.get(this);
+                Map<String, String> replacements = replacerQueue.isEmpty() ? Collections.emptyMap() : replacerQueue.poll();
+                return WebAccessLogGenerator.replaceVariablesInPattern(logFileDefinition.getLogPattern(), replacements);
             case LOGSTASH_ENCODER:
                 return logFileDefinition.getLogPattern();
             case SPRING:
-                return SpringLogGenerator.replaceVariablesInPattern(logFileDefinition.getLogPattern());
+                SpringLogGenerator.LoglevelMessageStatusCodeConnection queuedLoglevelMessageStatusCodeConnection = SpringLogGenerator.generateLogEventForQueue();
+                addHttpStatusToQueue(queuedLoglevelMessageStatusCodeConnection);
+                return SpringLogGenerator.replaceVariablesInPattern(logFileDefinition.getLogPattern(), queuedLoglevelMessageStatusCodeConnection);
             case WILDFLY:
             case CUSTOM_PATTERN:
                 return "An informative logger message...";
@@ -46,6 +61,22 @@ public class GenerateLogTask implements Runnable {
                 break;
         }
         return null;
+    }
+
+    private void addHttpStatusToQueue(SpringLogGenerator.LoglevelMessageStatusCodeConnection queuedLoglevelMessageStatusCodeConnection) {
+        Map<String, String> queuedStatusToWebLogMap = WebAccessLogGenerator.generateStatusCodeForQueue(queuedLoglevelMessageStatusCodeConnection);
+        GenerateLogTask webLogTask = getWebLogTask();
+        if (webLogTask != null && !queuedStatusToWebLogMap.isEmpty()) {
+            queueTracker.get(webLogTask).offer(queuedStatusToWebLogMap);
+            LOGGER.info("Add web log status to queue: {}", queuedStatusToWebLogMap);
+        }
+    }
+
+    private GenerateLogTask getWebLogTask() {
+        return queueTracker.keySet().stream()
+                .filter(generateLogTask -> generateLogTask.getLogFileDefinition().getLogPatternPreset().equals(LogPatternPresetKey.WEB_ACCESS_LOG))
+                .findFirst()
+                .orElse(null);
     }
 
     private void outputOneLogLine(Logger logger, LogFileDefinition logFileDefinition) {
@@ -118,5 +149,9 @@ public class GenerateLogTask implements Runnable {
 
     public void setRunning(boolean running) {
         this.running = running;
+    }
+
+    public LogFileDefinition getLogFileDefinition() {
+        return logFileDefinition;
     }
 }
