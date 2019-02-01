@@ -108,8 +108,7 @@ public class Settings implements Serializable {
         LogFileDefinition logFileDefinition = createNewLogFileDefinitionFromJsfViewInput();
         LOGGER.info("New config to file: {}", logFileDefinition);
         List<LogFileDefinition> logFileDefinitions = Collections.singletonList(logFileDefinition);
-        Utility.writeConfigToFile(logFileDefinitions, CONFIG_FILEPATH);
-        this.holders = createLogDefinitionHolders(logFileDefinitions);
+        updateLogFileDefinitionsInFileAndJsfView(logFileDefinitions, CONFIG_FILEPATH);
         WebAccessLogGeneratorProfile.writeWebAccessLogGeneratorProfileToFile(Collections.emptyMap());
         LOGGER.info("config file overwritten: {}", CONFIG_FILENAME);
         setFeedbackMessage("Wrote new config", FeedbackColor.GREEN);
@@ -125,8 +124,7 @@ public class Settings implements Serializable {
                     .anyMatch(logFileDefinition1 -> logFileDefinition1.getFileName().equals(logFileDefinition.getFileName()));
             if (!hasConflict) {
                 logFileDefinitions.add(logFileDefinition);
-                Utility.writeConfigToFile(logFileDefinitions, CONFIG_FILEPATH);
-                this.holders = createLogDefinitionHolders(logFileDefinitions);
+                updateLogFileDefinitionsInFileAndJsfView(logFileDefinitions, CONFIG_FILEPATH);
                 LOGGER.info("config for {} added to file: {}", logFileDefinition.getLogPatternPreset(), CONFIG_FILENAME);
                 setFeedbackMessage("Added log file definition to config file", FeedbackColor.GREEN);
             } else {
@@ -135,9 +133,8 @@ public class Settings implements Serializable {
             }
         } else {
             logFileDefinitions = Collections.singletonList(logFileDefinition);
-            Utility.writeConfigToFile(logFileDefinitions, CONFIG_FILEPATH);
-            this.holders = createLogDefinitionHolders(logFileDefinitions);
-            LOGGER.info("Config file not readable. Overwrote config file {} with new log file definition {}", CONFIG_FILENAME, logFileDefinition);
+            updateLogFileDefinitionsInFileAndJsfView(logFileDefinitions, CONFIG_FILEPATH);
+            LOGGER.error("Config file not readable. Overwrote config file {} with new log file definition {}", CONFIG_FILEPATH, logFileDefinition);
             setFeedbackMessage("Config file not readable. Overwrote config file with new log file definition", FeedbackColor.RED);
         }
     }
@@ -152,17 +149,36 @@ public class Settings implements Serializable {
                             logFileDefinition1.getId()
                                     .equals(logFileDefinitionToEdit.getId()) ? newLogFileDefinition : logFileDefinition1)
                     .collect(Collectors.toList());
-            Utility.writeConfigToFile(updatedList, CONFIG_FILEPATH);
-            this.holders = createLogDefinitionHolders(updatedList);
+            updateLogFileDefinitionsInFileAndJsfView(updatedList, CONFIG_FILEPATH);
             LOGGER.info("Updated logfile definition {}, in config {}", newLogFileDefinition, CONFIG_FILEPATH);
             setFeedbackMessage("Updated logfile definition", FeedbackColor.GREEN);
             clearFields();
             return "home?faces-redirect=true";
         } else {
-            LOGGER.info("Failed to read config. Nothing updated");
-            setFeedbackMessage("Failed to read config. Try creating a new config.", FeedbackColor.RED);
+            LOGGER.error("Failed to read config {}. Nothing updated.", CONFIG_FILEPATH);
+            setFeedbackMessage("Failed to read config file. Try creating a new config.", FeedbackColor.RED);
             return null;
         }
+    }
+
+    public void deleteLogFileDefinition() {
+        ArrayList<LogFileDefinition> logFileDefinitions = Utility.readConfigsFromFile(CONFIG_FILEPATH);
+        if (logFileDefinitions != null) {
+            List<LogFileDefinition> updatedLogfileDefinitionList = logFileDefinitions.stream()
+                    .filter(logFileDefinition -> !logFileDefinition.getId().equals(logFileDefinitionToEdit.getId()))
+                    .collect(Collectors.toList());
+            updateLogFileDefinitionsInFileAndJsfView(updatedLogfileDefinitionList, CONFIG_FILEPATH);
+            LOGGER.info("Deleted logfile definition: {}", logFileDefinitionToEdit);
+            setFeedbackMessage("Deleted log file definition for " + logFileDefinitionToEdit.getFileName(), FeedbackColor.GREEN);
+        } else {
+            LOGGER.error("Failed to read config {}. Nothing deleted.", CONFIG_FILEPATH);
+            setFeedbackMessage("Failed to read config file. Nothing was deleted", FeedbackColor.RED);
+        }
+    }
+
+    private void updateLogFileDefinitionsInFileAndJsfView(List<LogFileDefinition> logFileDefinitions, String configFilepath) {
+        Utility.writeConfigToFile(logFileDefinitions, configFilepath);
+        this.holders = createLogDefinitionHolders(logFileDefinitions);
     }
 
     private void setFeedbackMessage(String actionFeedback, FeedbackColor feedbackColor) {
@@ -291,7 +307,6 @@ public class Settings implements Serializable {
 
     private List<LogfileDefinitionHolder> createLogDefinitionHoldersFromConfigFile() {
         ArrayList<LogFileDefinition> logFileDefinitions = Utility.readConfigsFromFile(CONFIG_FILEPATH);
-        System.err.println(logFileDefinitions);
         if (logFileDefinitions != null) {
             return createLogDefinitionHolders(logFileDefinitions);
         }
