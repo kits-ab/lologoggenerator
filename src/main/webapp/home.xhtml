@@ -23,8 +23,10 @@
                 <f:selectItems value="#{settings.holders}" var="entry"
                                itemLabel="#{entry.keyName}" itemValue="#{entry.logFileDefinition}"/>
             </h:selectOneMenu>
+
             <h:commandButton id="editLogfiledefinition" value="Edit" action="#{settings.goToEdit}" disabled="false" />
             <h:commandButton id="deleteLogfiledefinition" value="Delete" action="#{settings.deleteLogFileDefinition}" disabled="false"/>
+            <h:commandButton id="deleteAllLogfiledefinitions" value="Delete All" action="#{settings.deleteAllLogFileDefinitions}" disabled="false"/>
         </h:form>
 
     </h:panelGrid>

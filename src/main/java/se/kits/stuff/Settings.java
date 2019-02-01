@@ -176,6 +176,12 @@ public class Settings implements Serializable {
         }
     }
 
+    public void deleteAllLogFileDefinitions() {
+        updateLogFileDefinitionsInFileAndJsfView(Collections.emptyList(), CONFIG_FILEPATH);
+        LOGGER.info("Cleared all log file definitions from config: {}", CONFIG_FILEPATH);
+        setFeedbackMessage("Cleared all log file definitions from config.", FeedbackColor.GREEN);
+    }
+
     private void updateLogFileDefinitionsInFileAndJsfView(List<LogFileDefinition> logFileDefinitions, String configFilepath) {
         Utility.writeConfigToFile(logFileDefinitions, configFilepath);
         this.holders = createLogDefinitionHolders(logFileDefinitions);
