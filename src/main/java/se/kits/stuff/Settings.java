@@ -337,6 +337,12 @@ public class Settings implements Serializable {
         return "edit";
     }
 
+    public String goToHome() {
+        clearFields();
+        this.actionFeedback = "";
+        return "home";
+    }
+
     private void setFieldsForEdit() {
         this.logFileDefinitionId = logFileDefinitionToEdit.getId();
         this.fileName = logFileDefinitionToEdit.getFileName();

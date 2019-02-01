@@ -56,7 +56,8 @@
             />
             <p/>
 
-            <h:button id="homeButton" value="Home"
+            <h:commandButton id="homeButton" value="Home"
+                             action="#{settings.goToHome}"
                              outcome="home"
                              disabled="#{false}" />
             <h:commandButton id="addConfigButton" value="Update"
