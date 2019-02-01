@@ -16,6 +16,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class LogFileDefinition {
+    private String id;
     private String fileName;
     private LogPatternPresetKey logPatternPreset;
     private String logPattern;

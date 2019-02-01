@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -9,32 +9,25 @@
       xmlns:p="http://primefaces.org/ui">
 <h:head>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-    <title>lologog generator</title>
+    <title>Edit logfile definition</title>
 </h:head>
 
 <body>
 <div id="content">
-    <h1>Enter logfile settings</h1>
-    <h:panelGrid columns="2" border="1" cellspacing="1">
-        <h:form>
-            Existing logfile definitions:
-            <h:selectOneMenu id="logFileDefinitions" value="#{settings.logFileDefinitionToEdit}" layout="pageDirection"
-                             converter="LogFileDefinitionConverter">
-                <f:selectItems value="#{settings.holders}" var="entry"
-                               itemLabel="#{entry.keyName}" itemValue="#{entry.logFileDefinition}"/>
-            </h:selectOneMenu>
-            <h:commandButton id="editLogfiledefinition" value="Edit" action="#{settings.goToEdit}" disabled="false" />
-        </h:form>
+    <h1>Edit logfile definition</h1>
 
-    </h:panelGrid>
-    <p/>
     <h:form id="lologogSettings">
         <div>
+            <h:outputText id="currentLogfileDefinitionToEdit" value="#{settings.logFileDefinitionToEdit}"/>
+            <p/>
+            <h:inputHidden id="logFileDefinitionId" value="#{settings.logFileDefinitionId}" />
             Filename:
             <h:inputText id="fileName" value="#{settings.fileName}"
+
                          required="true" size="32"
                          disabled="#{false}"
-                         />
+            />
+            <p:watermark for="fileName" value="#{settings.logFileDefinitionToEdit.fileName}" />
             <p/>
             Log Pattern Preset:
             <h:selectOneMenu id="logPatternPreSetSelect" value = "#{settings.logPatternPreSetSelection}">
@@ -62,13 +55,16 @@
                          validator="#{settings.validateFrequencyRange}"
             />
             <p/>
-            <h:commandButton id="newConfigButton" value="New Config"
-                             action="#{settings.writeNewLogFileConfig}"
-                             disabled="#{false}" />
 
-            <h:commandButton id="addConfigButton" value="Add to existing config"
-                             action="#{settings.addConfigToFile}"
+            <h:button id="homeButton" value="Home"
+                             outcome="home"
                              disabled="#{false}" />
+            <h:commandButton id="addConfigButton" value="Update"
+                             action="#{settings.updateLogFileDefinition}"
+                             disabled="#{false}" />
+        </div>
+        <div>
+
         </div>
     </h:form>
 
@@ -77,22 +73,6 @@
     </div>
 
 </div>
-
-<h:outputText value="#{settings.actionFeedback}" style="color: #{settings.color}"/>
-
-<hr/>
-
-<h1>Generate logs</h1>
-<div>
-    <h:form>
-        <h:commandButton id="startButton" value="Start" action="#{settings.start}" disabled="false"/> ...
-        <h:commandButton id="stopButton" value="Stop" action="#{settings.stop}" disabled="false"/>
-    </h:form>
-    <p/>
-    RUNNING STATUS:
-    <h:outputText id="runningStatus" value="#{settings.running}" />
-</div>
-
 
 <br style="clear: both" />
 
