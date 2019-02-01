@@ -24,7 +24,7 @@ It is presumed that `<host_path>` and `<host_path>/config`exists on the host mac
 
 ## Using
 
-User can create logfile definitions through `http://localhost:<host_port>/lologoggenerator/`
+User can create, edit and delete logfile definitions through `http://localhost:<host_port>/lologoggenerator/`
 
 User can choose a log pattern preset or define their own pattern with freetext in logback formatting syntax
 
