@@ -1,14 +1,23 @@
 # lologoggenerator
 Generate logs for fun
 
-## Developer Setup
+## Quick Start
+Build with:
+mvn clean install
 
+Run with:
+java -jar target/log-generator-thorntail.jar  
+
+Goto localhost:8080 , see Using section below
+
+## Developer Setup
+!! Not tested !!
 Output exploded war file `lologoggenerator.war` to `<project_path>/docker-dir/lologoggenerator_war` at build time
 
 IntelliJ setup walkthrough: https://www.jetbrains.com/help/idea/deploying-a-web-app-into-wildfly-container.html
 
 ## Building and Running
-
+!! Not tested !!
 ```
 docker build -t <image_tag> . \
 && docker run \
