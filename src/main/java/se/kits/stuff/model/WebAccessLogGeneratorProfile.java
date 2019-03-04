@@ -18,11 +18,20 @@ public class WebAccessLogGeneratorProfile {
 
     private static final HashMap<String, List<WeightedOption<String>>> PROFILE = new HashMap<>();
 
-    private static final String APPLOLOGOG_CONFIG_DIR = "/app/lologog/config/";
+    private static String APPLOLOGOG_CONFIG_DIR = "app/lologog/config/";
     private static final String WEBACCESSLOG_PROFILE = "webaccesslog_profile.json";
     private static final String WEBACCESSLOG_PROFILE_FILEPATH = APPLOLOGOG_CONFIG_DIR + WEBACCESSLOG_PROFILE;
     private static final Logger LOGGER = (Logger) LoggerFactory.getLogger(WebAccessLogGenerator.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    public WebAccessLogGeneratorProfile() {
+        APPLOLOGOG_CONFIG_DIR = System.getProperty("confDir", "app/lologog/config/");
+        try {
+            Files.createDirectories(Paths.get(APPLOLOGOG_CONFIG_DIR));
+        } catch (IOException e) {
+            throw new Error("Error initializing " + APPLOLOGOG_CONFIG_DIR);
+        }
+    }
 
     public void setNewOptions(String key, List<WeightedOption<String>> newOptions) {
         PROFILE.put(key, newOptions);

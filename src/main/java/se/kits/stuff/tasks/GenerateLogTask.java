@@ -12,6 +12,9 @@ import se.kits.stuff.WebAccessLogGenerator;
 import se.kits.stuff.model.LogFileDefinition;
 import se.kits.stuff.model.LogPatternPresetKey;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +27,7 @@ public class GenerateLogTask implements Runnable {
     private static final String MESSAGE_NEWLINE_PATTERN = "%msg%n";
     private static final String LOGGER_SUFFIX = "-logger";
     private LogFileDefinition logFileDefinition;
-    private static final String APPLOLOGOG_DIR = "/app/lologog/";
+    private static String APPLOLOGOG_DIR = "/app/lologog/";
 
     private boolean running;
     private ConcurrentHashMap<GenerateLogTask, ConcurrentLinkedQueue<Map<String, String>>> queueTracker;
@@ -39,6 +42,12 @@ public class GenerateLogTask implements Runnable {
         this.running = true;
         this.queueTracker = queueTracker;
         this.queueTracker.put(this, replacerQueue);
+        APPLOLOGOG_DIR = System.getProperty("logDir", "app/lologog/");
+        try {
+            Files.createDirectories(Paths.get(APPLOLOGOG_DIR));
+        } catch (IOException e) {
+            throw new Error("Error initializing " + APPLOLOGOG_DIR);
+        }
     }
 
     private String produceLogRowMessage(LogFileDefinition logFileDefinition) {

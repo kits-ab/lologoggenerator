@@ -9,16 +9,26 @@ import ch.qos.logback.core.FileAppender;
 import org.slf4j.LoggerFactory;
 import se.kits.stuff.model.LogFileDefinition;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 public class WriteTask implements Runnable {
 
     private static final Logger LOGGER = (Logger) LoggerFactory.getLogger(WriteTask.class);
     private static final String FILE_LOGGER_1 = "fileLogger1";
     private LogFileDefinition logFileDefinition;
-    private static final String APPLOLOGOG_DIR = "/app/lologog/";
+    private static String APPLOLOGOG_DIR = "/app/lologog/";
     private static final String FILEAPPENDER_1 = "fileappender1";
 
     public WriteTask(LogFileDefinition logFileDefinition) {
         this.logFileDefinition = logFileDefinition;
+        APPLOLOGOG_DIR = System.getProperty("logDir", "app/lologog/");
+        try {
+            Files.createDirectories(Paths.get(APPLOLOGOG_DIR));
+        } catch (IOException e) {
+            throw new Error("Error initializing " + APPLOLOGOG_DIR);
+        }
     }
 
     @Override

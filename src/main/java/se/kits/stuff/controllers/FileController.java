@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import se.kits.stuff.model.LogFileDefinition;
 import se.kits.stuff.tasks.WriteTask;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.enterprise.concurrent.ManagedThreadFactory;
@@ -34,16 +35,23 @@ import java.util.List;
 @Path("")
 public class FileController {
 
-    private static final String APPLOLOGOG_DIR = "/app/lologog/";
-    private static final String CONFIG_FILENAME = "logfile.config";
-    private static final String CONFIG_FILEPATH = APPLOLOGOG_DIR + CONFIG_FILENAME;
+    private static String APPLOLOGOG_DIR = "/app/lologog/";
+    private static String CONFIG_FILENAME = "logfile.config";
+    private static String CONFIG_FILEPATH = APPLOLOGOG_DIR + CONFIG_FILENAME;
     private static final Logger LOGGER = (Logger) LoggerFactory.getLogger(FileController.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final String LOGFILE_START_PATH = "/logfile/start";
-    private static final String LOGFILE_DEFINITION_PATH = "/logfiledefinition";
+    private static final String LOGFILE_START_PATH = "logfile/start";
+    private static final String LOGFILE_DEFINITION_PATH = "logfiledefinition";
 
     @Resource
     private ManagedThreadFactory managedThreadFactory;
+
+    @PostConstruct
+    public void init() {
+        APPLOLOGOG_DIR = System.getProperty("confDir", "app/lologog/");
+        CONFIG_FILENAME = System.getProperty("logConfFile", "logfile.config");
+        CONFIG_FILEPATH = APPLOLOGOG_DIR + CONFIG_FILENAME;
+    }
 
     @POST
     @Path(LOGFILE_DEFINITION_PATH)
@@ -110,7 +118,7 @@ public class FileController {
     @Path("/file/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response readTheFile(@PathParam("name") String name) {
-        List<String> lines = null;
+        List<String> lines;
         String filepath = APPLOLOGOG_DIR + name;
         try {
             lines = Files.readAllLines(Paths.get(filepath), Charset.defaultCharset());

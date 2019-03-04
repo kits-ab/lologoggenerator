@@ -11,6 +11,7 @@ import se.kits.stuff.model.WebAccessLogGeneratorProfile;
 import se.kits.stuff.model.qualifiers.LogPreset;
 import se.kits.stuff.tasks.GenerateLogTask;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedThreadFactory;
 import javax.enterprise.context.ApplicationScoped;
@@ -20,7 +21,10 @@ import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -50,9 +54,9 @@ public class Settings implements Serializable {
     private String actionFeedback;
     private String color;
 
-    private static final String APPLOLOGOG_CONFIG_DIR = "/app/lologog/config/";
-    private static final String CONFIG_FILENAME = "logfile_config.json";
-    private static final String CONFIG_FILEPATH = APPLOLOGOG_CONFIG_DIR + CONFIG_FILENAME;
+    private static String APPLOLOGOG_CONFIG_DIR = "/app/lologog/config/";
+    private static String CONFIG_FILENAME = "logfile_config.json";
+    private static String CONFIG_FILEPATH = APPLOLOGOG_CONFIG_DIR + CONFIG_FILENAME;
 
     private ArrayList<GenerateLogTask> generateLogTasks = new ArrayList<>();
 
@@ -66,6 +70,18 @@ public class Settings implements Serializable {
     private LinkedHashMap<LogPatternPresetKey, String> logPatternPresets;
 
     private ConcurrentHashMap<GenerateLogTask, ConcurrentLinkedQueue<Map<String, String>>> queueTracker = new ConcurrentHashMap<>();
+
+    @PostConstruct
+    public void init() {
+        APPLOLOGOG_CONFIG_DIR = System.getProperty("confDir", "app/lologog/config/");
+        CONFIG_FILENAME = System.getProperty("confFile", "logfile_config.json");
+        CONFIG_FILEPATH = APPLOLOGOG_CONFIG_DIR + CONFIG_FILENAME;
+        try {
+            Files.createDirectories(Paths.get(APPLOLOGOG_CONFIG_DIR));
+        } catch (IOException e) {
+            throw new Error("Error initializing " + APPLOLOGOG_CONFIG_DIR);
+        }
+    }
 
     public LinkedHashMap<LogPatternPresetKey, String> getLogPatternPresets() {
         return logPatternPresets;
