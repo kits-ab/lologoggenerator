@@ -2,11 +2,16 @@
 Generate logs for fun
 
 ## Quick Start
+Prerequisites: JDK11, Maven 3.x
+
 Build with:
 mvn clean install
 
 Run with:
 java -jar target/log-generator-thorntail.jar  
+
+Directories to use can be specified, e.g.:
+java -DlogConfDir=lc -DlogDir=ld/ -DconfDir=co -jar target/log-generator-thorntail.jar
 
 Goto localhost:8080 , see Using section below
 
