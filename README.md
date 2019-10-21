@@ -70,6 +70,8 @@ Log generation will run as long as the application is not stopped. The `RUNNING 
 
 `Stop` to stop generating logs.    
 
+Your created log file can be found in `<where-lologoggenerator-lives>/app/lologog` folder.
+
 ## Useful links
 https://logback.qos.ch/manual/layouts.html
 
